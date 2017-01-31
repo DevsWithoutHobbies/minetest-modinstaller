@@ -2,6 +2,3 @@
 name = "minetest-modinstaller"
 version = "0.1.0"
 authors = ["Noah Peeters <noah.peeters@icloud.com>", "Jonas Peeters <jonas.peeters@icloud.com>"]
-
-[dependencies]
-conrod = "0.51.1"
