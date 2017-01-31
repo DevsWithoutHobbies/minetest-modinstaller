@@ -2,3 +2,10 @@
 name = "minetest-modinstaller"
 version = "0.1.0"
 authors = ["Noah Peeters <noah.peeters@icloud.com>", "Jonas Peeters <jonas.peeters@icloud.com>"]
+
+[dependencies]
+conrod = "0.35.0"  # UI Framework
+piston_window = "0.48.0"  # Backend for UI
+find_folder = "0.3.0"  # Finding the assets folder
+log = "0.3.6"  # Base for custom logger
+rustc-serialize = "0.3.22"  # Storing and transmitting of encoded values
