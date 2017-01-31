@@ -1,0 +1,6 @@
+[package]
+name = "minetest-modinstaller"
+version = "0.1.0"
+authors = ["byYottaFLOPS <jonas.peeters@icloud.com>"]
+
+[dependencies]
