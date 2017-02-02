@@ -1,4 +1,4 @@
-package modinstaller_logic;
+package es.esy.modinstaller.modinstaller_logic;
 
 import javafx.scene.control.TreeItem;
 

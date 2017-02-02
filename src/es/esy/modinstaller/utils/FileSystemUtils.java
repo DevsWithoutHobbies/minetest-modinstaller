@@ -1,4 +1,4 @@
-package utils;
+package es.esy.modinstaller.utils;
 
 import java.io.File;
 

@@ -1,4 +1,4 @@
-package modinstaller;
+package es.esy.modinstaller;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -9,9 +9,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.web.WebView;
-import modinstaller_logic.Mod;
-import modinstaller_logic.ModPack;
-import utils.Utils;
+import es.esy.modinstaller.modinstaller_logic.Mod;
+import es.esy.modinstaller.modinstaller_logic.ModPack;
+import es.esy.modinstaller.utils.Utils;
 
 import java.io.*;
 import java.net.URL;
@@ -20,9 +20,9 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static modinstaller_logic.Paths.*;
-import static utils.FileSystemUtils.deleteFile;
-import static utils.FileSystemUtils.sep;
+import static es.esy.modinstaller.modinstaller_logic.Paths.*;
+import static es.esy.modinstaller.utils.FileSystemUtils.deleteFile;
+import static es.esy.modinstaller.utils.FileSystemUtils.sep;
 
 
 public class Controller implements Initializable {
@@ -34,9 +34,9 @@ public class Controller implements Initializable {
     private final List<Mod> modList;
     private final List<ModPack> modPackList;
 
-    private final Image iconGreen = new Image(getClass().getResourceAsStream("/img/green.png"));
-    private final Image iconYellow = new Image(getClass().getResourceAsStream("/img/yellow.png"));
-    private final Image iconGray = new Image(getClass().getResourceAsStream("/img/gray.png"));
+    private final Image iconGreen = new Image(getClass().getResourceAsStream("/es/esy/modinstaller/img/green.png"));
+    private final Image iconYellow = new Image(getClass().getResourceAsStream("/es/esy/modinstaller/img/yellow.png"));
+    private final Image iconGray = new Image(getClass().getResourceAsStream("/es/esy/modinstaller/img/gray.png"));
 
 
 

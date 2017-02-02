@@ -1,4 +1,4 @@
-package utils;
+package es.esy.modinstaller.utils;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more

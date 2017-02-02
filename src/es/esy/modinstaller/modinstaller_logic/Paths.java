@@ -1,15 +1,15 @@
-package modinstaller_logic;
+package es.esy.modinstaller.modinstaller_logic;
 
 import javafx.scene.control.Alert;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Window;
-import utils.OSValidator;
-import utils.Utils;
+import es.esy.modinstaller.utils.OSValidator;
+import es.esy.modinstaller.utils.Utils;
 
 import java.io.*;
 import java.nio.charset.Charset;
 
-import static utils.FileSystemUtils.sep;
+import static es.esy.modinstaller.utils.FileSystemUtils.sep;
 
 /**
  * Created by noah on 2/2/17.
@@ -19,8 +19,8 @@ public class Paths {
     private static Window window;
 
     public static String getConfigDir() {
-        if (OSValidator.isWindows()) return System.getenv("APPDATA") + "\\minetest_modinstaller";
-        else if (OSValidator.isMac()) return System.getProperty("user.home") + "/Library/Application Support/Minetest Modinstaller";
+        if (OSValidator.isWindows()) return System.getenv("APPDATA") + "\\Minetest Modinstaller";
+        else if (OSValidator.isMac()) return System.getProperty("user.home") + "/Library/Application Support/es.esy.modinstaller.Modinstaller";
         else return System.getProperty("user.home") + "/.minetest_modinstaller";
     }
 

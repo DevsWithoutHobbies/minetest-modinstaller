@@ -1,4 +1,4 @@
-package utils;
+package es.esy.modinstaller.utils;
 
 public class OSValidator {
     private static String OS = System.getProperty("os.name").toLowerCase();

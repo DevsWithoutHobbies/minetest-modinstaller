@@ -1,4 +1,4 @@
-package modinstaller;
+package es.esy.modinstaller;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -8,10 +8,10 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 
-import static modinstaller_logic.Paths.loadModsPath;
-import static modinstaller_logic.Paths.setWindow;
+import static es.esy.modinstaller.modinstaller_logic.Paths.loadModsPath;
+import static es.esy.modinstaller.modinstaller_logic.Paths.setWindow;
 
-public class Main extends Application {
+public class Modinstaller extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
