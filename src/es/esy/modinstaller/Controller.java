@@ -378,7 +378,7 @@ public class Controller implements Initializable {
 
 
     private void showModInfo(Mod mod) {
-        web_view.getEngine().load("http://mine-modinstaller.esy.es/modinfo.html?data=" + mod.urlData);
+        web_view.getEngine().load("http://modinstaller.esy.es/modinfo.html?data=" + mod.urlData);
     }
 
 
