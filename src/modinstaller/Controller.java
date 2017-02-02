@@ -1,6 +1,5 @@
 package modinstaller;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -9,7 +8,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.web.WebView;
 import modinstaller_logic.Mod;
 import modinstaller_logic.ModPack;
-import utils.OSValidator;
 import utils.Utils;
 
 import java.io.*;
@@ -18,6 +16,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.*;
 
+import static modinstaller_logic.Paths.*;
 import static utils.FileSystemUtils.deleteFile;
 import static utils.FileSystemUtils.sep;
 
@@ -40,21 +39,17 @@ public class Controller implements Initializable {
         this.modPackList = new ArrayList<>();
     }
 
-    private static String getMinetestDir() {
-        if (OSValidator.isWindows()) return System.getenv("APPDATA") + "\\minetest";
-        else if (OSValidator.isMac()) return System.getProperty("user.home") + "/Library/Application Support/minetest";
-        else return System.getProperty("user.home") + "/.minetest";
-    }
-
-    public void install(ActionEvent actionEvent) {
+    public void install() {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Install Mods");
         alert.setHeaderText("Important information");
-        alert.setContentText("This tool will download and install software. Make sure that you trust the authors of the selected mods. Please notice that this mod installer doesn't remove any mods. To uninstall a mod you have to delete it manually.");
+        alert.setContentText("This tool will download and install software. Make sure that you trust the authors of the selected mods. Please notice that this mod installer doesn't remove any mods, which aren't indexed by this mod-installer. To uninstall these mods you have to delete them manually.");
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            String modsPath = getMinetestDir() + sep() + "mods";
+            saveActivatedMods();
+
+            String modsPath = getModsPath();
             String modInstallerPath = getMinetestDir() + sep() + "mod_installer_data";
             String tmpModsPath = getMinetestDir() + sep() + "mod_installer_data" + sep() + "data";
 
@@ -67,6 +62,11 @@ public class Controller implements Initializable {
             for (Mod mod : modList) {
                 if (mod.isActivated()) toInstall.add(mod);
 
+                // delete old version if exists
+                deleteFile(getModDirectory(mod));
+                if (mod.modPack != null) {
+                    deleteFile(getModPackDirectory(mod.modPack));
+                }
             }
 
             List<String> manualInstall = new ArrayList<>();
@@ -80,36 +80,22 @@ public class Controller implements Initializable {
                 Utils.buildDirectory(tmpModFile);
 
                 // get final location
-                File modFile;
-                if (mod.modPack == null) {
-                    //mod is not part of a modPack
-                    modFile = new File(modsPath + sep() + mod.name);
-                    Utils.buildDirectory(modFile);
-                } else {
-                    //mod is part of a modPack
-                    modFile = new File(modsPath + sep() + mod.modPack.name + sep() + mod.name);
-                    Utils.buildDirectory(modFile);
+                File modFile = getModDirectory(mod);
 
-                    // get path to modpack.txt - required for modPacks
-                    File modPackFile = new File(modsPath + sep() + mod.modPack.name + sep() + "modpack.txt");
-                    if (!modPackFile.exists()) {
-                        try {
-                            modPackFile.createNewFile();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                // generate modpack.txt if required
+                if (mod.modPack != null) {
+                    Utils.buildDirectory(getModPackDirectory(mod.modPack));
+                    createModpackTXT(mod.modPack);
                 }
 
                 try {
-                    // delete old version if exists
-                    deleteFile(modFile);
-
                     // unpack in temporary directory
                     Utils.unpackArchive(new URL(mod.zipLink), tmpModFile);
 
-                    // move first folder to final location
+                    //get all directories
                     File[] directories = tmpModFile.listFiles(File::isDirectory);
+
+                    // move first folder to final location
                     if (directories != null && directories.length > 0) {
                         Files.move(directories[0].toPath(), modFile.toPath());
                         File dependenciesFile = new File(modFile + sep() + "depends.txt");
@@ -118,7 +104,7 @@ public class Controller implements Initializable {
                             try (
                                     InputStream fis = new FileInputStream(dependenciesFile.getAbsoluteFile());
                                     InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-                                    BufferedReader br = new BufferedReader(isr);
+                                    BufferedReader br = new BufferedReader(isr)
                             ) {
                                 while ((line = br.readLine()) != null) {
                                     String name = line;
@@ -158,10 +144,10 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        showModInfo("TestMod123");
         try {
             loadMods();
             loadModPacks();
+            loadActivatedMods();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -213,6 +199,47 @@ public class Controller implements Initializable {
         modPackList.sort((a, b) -> b.name.compareTo(a.name));
     }
 
+    private File getConfigFile() {
+        return new File(getMinetestDir() + sep() + "mod_installer_data" + sep() + "config.txt");
+    }
+
+    private void loadActivatedMods() {
+        File configFile = getConfigFile();
+        if (configFile.exists()) {
+            String line;
+            try (
+                    InputStream fis = new FileInputStream(configFile.getAbsoluteFile());
+                    InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+                    BufferedReader br = new BufferedReader(isr)
+            ) {
+                while ((line = br.readLine()) != null) {
+                    Mod m = getModByName(line);
+                    if (m != null) {
+                        m.setActivated(true);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void saveActivatedMods() {
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(getConfigFile().getAbsoluteFile());
+
+            for (Mod mod : modList) {
+                if (mod.isActivated()) fw.write(mod.name + "\n");
+            }
+
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void updateImages() {
         for (ModPack modPack : modPackList) {
             int activationLevel = modPack.getActivationLevel();
@@ -253,26 +280,19 @@ public class Controller implements Initializable {
 
         tree_view.setRoot(root);
 
-        tree_view.setOnMouseClicked(click -> {
+        tree_view.setOnMouseClicked(mouseEvent -> {
             TreeItem<String> currentItemSelected = tree_view.getSelectionModel().getSelectedItem();
             if (currentItemSelected != null) {
-                if (click.getButton() == MouseButton.PRIMARY) {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                     for (Mod mod : modList) {
                         if (currentItemSelected == mod.node) {
                             showModInfo(mod.name);
                         }
                     }
                 }
-                if (click.getButton() == MouseButton.SECONDARY || click.getClickCount() == 2) {
+                if (mouseEvent.getButton() == MouseButton.SECONDARY || mouseEvent.getClickCount() == 2) {
                     if (currentItemSelected == tree_view.getRoot()) {
-                        int activeModCount = 0;
-                        for (Mod mod : modList) {
-                            if (mod.isActivated()) activeModCount++;
-                        }
-                        Boolean newStatus = activeModCount < modList.size();
-                        for (Mod mod : modList) {
-                            mod.setActivated(newStatus);
-                        }
+                        toggleAll();
                         updateImages();
                         return;
                     }
@@ -293,6 +313,17 @@ public class Controller implements Initializable {
                 }
             }
         });
+    }
+
+    private void toggleAll() {
+        int activeModCount = 0;
+        for (Mod mod : modList) {
+            if (mod.isActivated()) activeModCount++;
+        }
+        Boolean newStatus = activeModCount < modList.size();
+        for (Mod mod : modList) {
+            mod.setActivated(newStatus);
+        }
     }
 
 
