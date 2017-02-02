@@ -2,10 +2,12 @@ package modinstaller;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.web.WebView;
 import modinstaller_logic.Mod;
@@ -28,6 +30,7 @@ public class Controller implements Initializable {
     public Button install_btn;
     public TreeView<String> tree_view;
     public WebView web_view;
+    public TextField search_field;
 
     private final List<Mod> modList;
     private final List<ModPack> modPackList;
@@ -35,6 +38,7 @@ public class Controller implements Initializable {
     private final Image iconGreen = new Image(getClass().getResourceAsStream("/img/green.png"));
     private final Image iconYellow = new Image(getClass().getResourceAsStream("/img/yellow.png"));
     private final Image iconGray = new Image(getClass().getResourceAsStream("/img/gray.png"));
+
 
 
     public Controller() {
@@ -194,6 +198,8 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        search_field.textProperty().addListener((observable, oldValue, newValue) -> resetTreeView());
+
         long startTime = System.nanoTime();
         try {
             loadMods();
@@ -321,11 +327,12 @@ public class Controller implements Initializable {
         root.setExpanded(true);
 
         for (ModPack modPack : modPackList) {
-            root.getChildren().add(modPack.node);
+            TreeItem<String> node = modPack.getNode(search_field.getCharacters());
+            if (node != null) root.getChildren().add(node);
         }
 
         for (Mod mod : modList) {
-            if (mod.modPack == null)
+            if (mod.modPack == null && mod.name.contains(search_field.getCharacters()))
                 root.getChildren().add(mod.node);
         }
 

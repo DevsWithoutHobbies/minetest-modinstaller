@@ -15,8 +15,8 @@ public class ModPack {
 
     public ModPack(String name) {
         this.name = name;
+        this.node = new TreeItem<>(name);
         mods = new ArrayList<>();
-        node = new TreeItem<>(name);
     }
 
     public void toggleActivation() {
@@ -29,8 +29,20 @@ public class ModPack {
         if (mod != null) {
             mod.modPack = this;
             mods.add(mod);
-            node.getChildren().add(mod.node);
         }
+    }
+
+    public TreeItem<String> getNode(CharSequence searchString) {
+        node.getChildren().clear();
+        final Boolean includeAll = name.contains(searchString);
+        for (Mod mod : mods) {
+            if (includeAll || mod.name.contains(searchString))
+                node.getChildren().add(mod.node);
+        }
+        if (node.getChildren().size() > 0)
+            return node;
+        else
+            return null;
     }
 
     public int getActivationLevel() {
