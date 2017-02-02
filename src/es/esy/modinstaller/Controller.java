@@ -73,12 +73,9 @@ public class Controller implements Initializable {
             // get mod
             Mod mod = toInstall.get(i);
             int finalI = i;
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("(" + (finalI + 1) + "/" + toInstall.size() + ") Installing " + mod.name + "...");
-                    install_btn.setText("(" + (finalI + 1) + "/" + toInstall.size() + ") Installing " + mod.name + "...");
-                }
+            Platform.runLater(() -> {
+                System.out.println("(" + (finalI + 1) + "/" + toInstall.size() + ") Installing " + mod.name + "...");
+                install_btn.setText("(" + (finalI + 1) + "/" + toInstall.size() + ") Installing " + mod.name + "...");
             });
 
             // create temporary download directory
@@ -142,33 +139,30 @@ public class Controller implements Initializable {
         // remove temporary download directory
         deleteFile(new File(tmpModsPath));
 
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                install_btn.setText("Reinstall");
-                if (manualInstallOptional.size() > 0 || manualInstallRequired.size() > 0) {
-                    Alert alertManInstall = new Alert(Alert.AlertType.WARNING);
-                    alertManInstall.setTitle("Manual install mods");
-                    alertManInstall.setHeaderText("Important information");
+        Platform.runLater(() -> {
+            install_btn.setText("Reinstall");
+            if (manualInstallOptional.size() > 0 || manualInstallRequired.size() > 0) {
+                Alert alertManInstall = new Alert(Alert.AlertType.WARNING);
+                alertManInstall.setTitle("Manual install mods");
+                alertManInstall.setHeaderText("Important information");
 
-                    String textRequired = manualInstallRequired.size() > 0 ? "You will need to install the following " +
-                            "mods manually, because they aren't indexed by this mod-installer:\n" +
-                            manualInstallRequired : "";
+                String textRequired = manualInstallRequired.size() > 0 ? "You will need to install the following " +
+                        "mods manually, because they aren't indexed by this mod-installer:\n" +
+                        manualInstallRequired : "";
 
-                    List<String> manualInstallOptionalFiltered = manualInstallOptional.stream().filter(n -> !manualInstallRequired.contains(n)).collect(Collectors.toList());
+                List<String> manualInstallOptionalFiltered = manualInstallOptional.stream().filter(n -> !manualInstallRequired.contains(n)).collect(Collectors.toList());
 
-                    String textOptional = manualInstallOptionalFiltered.size() > 0 ? "The following mods aren't indexed by this " +
-                            "mod-installer but are optional dependencies of at least one mod. You can install " +
-                            "them manually:\n" + manualInstallOptionalFiltered : "";
+                String textOptional = manualInstallOptionalFiltered.size() > 0 ? "The following mods aren't indexed by this " +
+                        "mod-installer but are optional dependencies of at least one mod. You can install " +
+                        "them manually:\n" + manualInstallOptionalFiltered : "";
 
-                    if (textRequired.length() > 0 && textOptional.length() > 0) {
-                        alertManInstall.setContentText(textRequired + "\n\n" + textOptional);
-                    } else {
-                        alertManInstall.setContentText(textRequired + textOptional);
-                    }
-
-                    alertManInstall.show();
+                if (textRequired.length() > 0 && textOptional.length() > 0) {
+                    alertManInstall.setContentText(textRequired + "\n\n" + textOptional);
+                } else {
+                    alertManInstall.setContentText(textRequired + textOptional);
                 }
+
+                alertManInstall.show();
             }
         });
     }
