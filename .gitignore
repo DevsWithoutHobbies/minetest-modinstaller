@@ -1,3 +1,5 @@
 .DS_Store
-target
-Cargo.lock
+.idea/
+META-INF/
+out/
+modinstaller.iml
