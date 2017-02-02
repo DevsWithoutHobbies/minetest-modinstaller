@@ -1,4 +1,4 @@
-package sample;
+package modinstaller;
 
 import javafx.scene.control.TreeItem;
 

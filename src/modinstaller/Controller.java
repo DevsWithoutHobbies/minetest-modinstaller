@@ -1,17 +1,14 @@
-package sample;
+package modinstaller;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.web.WebView;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -26,9 +23,9 @@ public class Controller implements Initializable {
     private List<Mod> modList;
     private List<ModPack> modPackList;
 
-    private Image iconGreen = new Image(getClass().getResourceAsStream("green.png"));
-    private Image iconYellow = new Image(getClass().getResourceAsStream("yellow.png"));
-    private Image iconGray = new Image(getClass().getResourceAsStream("gray.png"));
+    private Image iconGreen = new Image(getClass().getResourceAsStream("/img/green.png"));
+    private Image iconYellow = new Image(getClass().getResourceAsStream("/img/yellow.png"));
+    private Image iconGray = new Image(getClass().getResourceAsStream("/img/gray.png"));
 
 
     public Controller() {

@@ -1,4 +1,4 @@
-package sample;
+package modinstaller;
 
 /**
  * Created by noah on 2/1/17.
