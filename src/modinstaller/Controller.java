@@ -2,12 +2,11 @@ package modinstaller;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.fxml.FXML;
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.web.WebView;
 import modinstaller_logic.Mod;
@@ -48,11 +47,9 @@ public class Controller implements Initializable {
 
     private void installAsync() {
         String modsPath = getModsPath();
-        String modInstallerPath = getMinetestDir() + sep() + "mod_installer_data";
-        String tmpModsPath = getMinetestDir() + sep() + "mod_installer_data" + sep() + "data";
+        String tmpModsPath = getConfigDir() + sep() + "tmp_data";
 
         Utils.buildDirectory(new File(modsPath));
-        Utils.buildDirectory(new File(modInstallerPath));
         Utils.buildDirectory(new File(tmpModsPath));
 
         saveActivatedMods();
@@ -256,10 +253,6 @@ public class Controller implements Initializable {
         modPackList.sort((a, b) -> b.name.compareTo(a.name));
     }
 
-    private File getConfigFile() {
-        return new File(getMinetestDir() + sep() + "mod_installer_data" + sep() + "config.txt");
-    }
-
     private void loadActivatedMods() {
         File configFile = getConfigFile();
         if (configFile.exists()) {
@@ -386,5 +379,10 @@ public class Controller implements Initializable {
 
     private void showModInfo(Mod mod) {
         web_view.getEngine().load("http://mine-modinstaller.esy.es/modinfo.html?data=" + mod.urlData);
+    }
+
+
+    public void onMenuChangeInstallDirectory(ActionEvent actionEvent) {
+        loadModsPath(true);
     }
 }

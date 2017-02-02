@@ -1,8 +1,5 @@
 package utils;
 
-/**
- * Created by noah on 2/1/17.
- */
 public class OSValidator {
     private static String OS = System.getProperty("os.name").toLowerCase();
 
