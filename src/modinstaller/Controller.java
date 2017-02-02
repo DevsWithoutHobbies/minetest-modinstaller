@@ -1,7 +1,7 @@
 package modinstaller;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import javafx.fxml.FXML;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -42,6 +42,137 @@ public class Controller implements Initializable {
         this.modPackList = new ArrayList<>();
     }
 
+    private void installAsync() {
+        saveActivatedMods();
+
+        String modsPath = getModsPath();
+        String modInstallerPath = getMinetestDir() + sep() + "mod_installer_data";
+        String tmpModsPath = getMinetestDir() + sep() + "mod_installer_data" + sep() + "data";
+
+        Utils.buildDirectory(new File(modsPath));
+        Utils.buildDirectory(new File(modInstallerPath));
+        Utils.buildDirectory(new File(tmpModsPath));
+
+        List<Mod> toInstall = new ArrayList<>();
+
+        for (Mod mod : modList) {
+            if (mod.isActivated()) toInstall.add(mod);
+
+            // delete old version if exists
+            deleteFile(getModDirectory(mod));
+            if (mod.modPack != null) {
+                deleteFile(getModPackDirectory(mod.modPack));
+            }
+        }
+
+        List<String> manualInstallRequired = new ArrayList<>();
+        List<String> manualInstallOptional = new ArrayList<>();
+        int i = 0;
+        while (i < toInstall.size()) {
+            // get mod
+            Mod mod = toInstall.get(i);
+            int finalI = i;
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("(" + (finalI + 1) + "/" + toInstall.size() + ") Installing " + mod.name + "...");
+                    install_btn.setText("(" + (finalI + 1) + "/" + toInstall.size() + ") Installing " + mod.name + "...");
+                }
+            });
+
+            // create temporary download directory
+            File tmpModFile = new File(tmpModsPath + sep() + mod.name);
+            Utils.buildDirectory(tmpModFile);
+
+            // get final location
+            File modFile = getModDirectory(mod);
+
+            // generate modpack.txt if required
+            if (mod.modPack != null) {
+                Utils.buildDirectory(getModPackDirectory(mod.modPack));
+                createModpackTXT(mod.modPack);
+            }
+
+            try {
+                // unpack in temporary directory
+                Utils.unpackArchive(new URL(mod.zipLink), tmpModFile);
+
+                //get all directories
+                File[] directories = tmpModFile.listFiles(File::isDirectory);
+
+                // move first folder to final location
+                if (directories != null && directories.length > 0) {
+                    Files.move(directories[0].toPath(), modFile.toPath());
+                    File dependenciesFile = new File(modFile + sep() + "depends.txt");
+                    if (dependenciesFile.exists()) {
+                        String line;
+                        try (
+                                InputStream fis = new FileInputStream(dependenciesFile.getAbsoluteFile());
+                                InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+                                BufferedReader br = new BufferedReader(isr)
+                        ) {
+                            while ((line = br.readLine()) != null) {
+                                String name = line;
+                                Boolean optional = false;
+                                if (line.lastIndexOf("?") == line.length() - 1) {
+                                    name = line.substring(0, line.length() - 1);
+                                    optional = true;
+                                }
+                                Mod m = getModByName(name);
+                                if (m == null) {
+                                    if (!optional && !manualInstallRequired.contains(name))
+                                        manualInstallRequired.add(name);
+                                    else if (optional && !manualInstallOptional.contains(name))
+                                        manualInstallOptional.add(name);
+                                } else {
+                                    if (!toInstall.contains(m))
+                                        toInstall.add(m);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // remove temporary download directory
+            deleteFile(tmpModFile);
+
+            i++;
+        }
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                install_btn.setText("Reinstall");
+                if (manualInstallOptional.size() > 0 || manualInstallRequired.size() > 0) {
+                    Alert alertManInstall = new Alert(Alert.AlertType.WARNING);
+                    alertManInstall.setTitle("Manual install mods");
+                    alertManInstall.setHeaderText("Important information");
+
+                    String textRequired = manualInstallRequired.size() > 0 ? "You will need to install the following " +
+                            "mods manually, because they aren't indexed by this mod-installer:\n" +
+                            manualInstallRequired : "";
+
+                    List<String> manualInstallOptionalFiltered = manualInstallOptional.stream().filter(n -> !manualInstallRequired.contains(n)).collect(Collectors.toList());
+
+                    String textOptional = manualInstallOptionalFiltered.size() > 0 ? "The following mods aren't indexed by this " +
+                            "mod-installer but are optional dependencies of at least one mod. You can install " +
+                            "them manually:\n" + manualInstallOptionalFiltered : "";
+
+                    if (textRequired.length() > 0 && textOptional.length() > 0) {
+                        alertManInstall.setContentText(textRequired + "\n\n" + textOptional);
+                    } else {
+                        alertManInstall.setContentText(textRequired + textOptional);
+                    }
+
+                    alertManInstall.show();
+                }
+            }
+        });
+    }
+
     public void install() {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Install Mods");
@@ -50,120 +181,15 @@ public class Controller implements Initializable {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            saveActivatedMods();
-
-            String modsPath = getModsPath();
-            String modInstallerPath = getMinetestDir() + sep() + "mod_installer_data";
-            String tmpModsPath = getMinetestDir() + sep() + "mod_installer_data" + sep() + "data";
-
-            Utils.buildDirectory(new File(modsPath));
-            Utils.buildDirectory(new File(modInstallerPath));
-            Utils.buildDirectory(new File(tmpModsPath));
-
-            List<Mod> toInstall = new ArrayList<>();
-
-            for (Mod mod : modList) {
-                if (mod.isActivated()) toInstall.add(mod);
-
-                // delete old version if exists
-                deleteFile(getModDirectory(mod));
-                if (mod.modPack != null) {
-                    deleteFile(getModPackDirectory(mod.modPack));
+            Task task = new Task<Void>() {
+                @Override
+                public Void call() {
+                    installAsync();
+                    return null;
                 }
-            }
-
-            List<String> manualInstallRequired = new ArrayList<>();
-            List<String> manualInstallOptional = new ArrayList<>();
-            int i = 0;
-            while (i < toInstall.size()) {
-                // get mod
-                Mod mod = toInstall.get(i);
-
-                // create temporary download directory
-                File tmpModFile = new File(tmpModsPath + sep() + mod.name);
-                Utils.buildDirectory(tmpModFile);
-
-                // get final location
-                File modFile = getModDirectory(mod);
-
-                // generate modpack.txt if required
-                if (mod.modPack != null) {
-                    Utils.buildDirectory(getModPackDirectory(mod.modPack));
-                    createModpackTXT(mod.modPack);
-                }
-
-                try {
-                    // unpack in temporary directory
-                    Utils.unpackArchive(new URL(mod.zipLink), tmpModFile);
-
-                    //get all directories
-                    File[] directories = tmpModFile.listFiles(File::isDirectory);
-
-                    // move first folder to final location
-                    if (directories != null && directories.length > 0) {
-                        Files.move(directories[0].toPath(), modFile.toPath());
-                        File dependenciesFile = new File(modFile + sep() + "depends.txt");
-                        if (dependenciesFile.exists()) {
-                            String line;
-                            try (
-                                    InputStream fis = new FileInputStream(dependenciesFile.getAbsoluteFile());
-                                    InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-                                    BufferedReader br = new BufferedReader(isr)
-                            ) {
-                                while ((line = br.readLine()) != null) {
-                                    String name = line;
-                                    Boolean optional = false;
-                                    if (line.lastIndexOf("?") == line.length() - 1) {
-                                        name = line.substring(0, line.length() - 1);
-                                        optional = true;
-                                    }
-                                    Mod m = getModByName(name);
-                                    if (m == null) {
-                                        if (!optional && !manualInstallRequired.contains(name))
-                                            manualInstallRequired.add(name);
-                                        else if (optional && !manualInstallOptional.contains(name))
-                                            manualInstallOptional.add(name);
-                                    } else {
-                                        if (!toInstall.contains(m))
-                                            toInstall.add(m);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                // remove temporary download directory
-                deleteFile(tmpModFile);
-
-                i++;
-            }
-
-            if (manualInstallOptional.size() > 0 || manualInstallRequired.size() > 0) {
-                Alert alertManInstall = new Alert(Alert.AlertType.WARNING);
-                alertManInstall.setTitle("Manual install mods");
-                alertManInstall.setHeaderText("Important information");
-
-                String textRequired = manualInstallRequired.size() > 0 ? "You will need to install the following " +
-                        "mods manually, because they aren't indexed by this mod-installer:\n" +
-                        manualInstallRequired : "";
-
-                List<String> manualInstallOptionalFiltered = manualInstallOptional.stream().filter(n -> !manualInstallRequired.contains(n)).collect(Collectors.toList());
-
-                String textOptional = manualInstallOptionalFiltered.size() > 0 ? "The following mods aren't indexed by this " +
-                        "mod-installer but are optional dependencies of at least one mod. You can install " +
-                        "them manually:\n" + manualInstallOptionalFiltered : "";
-
-                if (textRequired.length() > 0 && textOptional.length() > 0) {
-                    alertManInstall.setContentText(textRequired + "\n\n" + textOptional);
-                } else {
-                    alertManInstall.setContentText(textRequired + textOptional);
-                }
-
-                alertManInstall.show();
-            }
+            };
+            task.setOnSucceeded(taskFinishEvent -> System.out.println("Finished"));
+            new Thread(task).start();
         }
     }
 
