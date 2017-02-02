@@ -1,5 +1,6 @@
 package modinstaller;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -16,6 +17,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static modinstaller_logic.Paths.*;
 import static utils.FileSystemUtils.deleteFile;
@@ -70,7 +72,8 @@ public class Controller implements Initializable {
                 }
             }
 
-            List<String> manualInstall = new ArrayList<>();
+            List<String> manualInstallRequired = new ArrayList<>();
+            List<String> manualInstallOptional = new ArrayList<>();
             int i = 0;
             while (i < toInstall.size()) {
                 // get mod
@@ -109,12 +112,17 @@ public class Controller implements Initializable {
                             ) {
                                 while ((line = br.readLine()) != null) {
                                     String name = line;
+                                    Boolean optional = false;
                                     if (line.lastIndexOf("?") == line.length() - 1) {
                                         name = line.substring(0, line.length() - 1);
+                                        optional = true;
                                     }
                                     Mod m = getModByName(name);
                                     if (m == null) {
-                                        manualInstall.add(name);
+                                        if (!optional && !manualInstallRequired.contains(name))
+                                            manualInstallRequired.add(name);
+                                        else if (optional && !manualInstallOptional.contains(name))
+                                            manualInstallOptional.add(name);
                                     } else {
                                         if (!toInstall.contains(m))
                                             toInstall.add(m);
@@ -133,11 +141,27 @@ public class Controller implements Initializable {
                 i++;
             }
 
-            if (manualInstall.size() > 0) {
+            if (manualInstallOptional.size() > 0 || manualInstallRequired.size() > 0) {
                 Alert alertManInstall = new Alert(Alert.AlertType.WARNING);
                 alertManInstall.setTitle("Manual install mods");
                 alertManInstall.setHeaderText("Important information");
-                alertManInstall.setContentText("You will need to install the following mods manually, because they aren't indexed by this mod-installer:\n" + manualInstall);
+
+                String textRequired = manualInstallRequired.size() > 0 ? "You will need to install the following " +
+                        "mods manually, because they aren't indexed by this mod-installer:\n" +
+                        manualInstallRequired : "";
+
+                List<String> manualInstallOptionalFiltered = manualInstallOptional.stream().filter(n -> !manualInstallRequired.contains(n)).collect(Collectors.toList());
+
+                String textOptional = manualInstallOptionalFiltered.size() > 0 ? "The following mods aren't indexed by this " +
+                        "mod-installer but are optional dependencies of at least one mod. You can install " +
+                        "them manually:\n" + manualInstallOptionalFiltered : "";
+
+                if (textRequired.length() > 0 && textOptional.length() > 0) {
+                    alertManInstall.setContentText(textRequired + "\n\n" + textOptional);
+                } else {
+                    alertManInstall.setContentText(textRequired + textOptional);
+                }
+
                 alertManInstall.show();
             }
         }
@@ -145,6 +169,7 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        long startTime = System.nanoTime();
         try {
             loadMods();
             loadModPacks();
@@ -154,6 +179,7 @@ public class Controller implements Initializable {
         }
         resetTreeView();
         updateImages();
+        System.out.println("Init: " + (System.nanoTime() - startTime) / 1000000000.0 + "s");
     }
 
     private Mod getModByName(String name) {
