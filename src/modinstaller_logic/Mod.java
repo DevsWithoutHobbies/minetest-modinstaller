@@ -6,11 +6,11 @@ import javafx.scene.control.TreeItem;
  * Created by noah on 2/1/17.
  */
 public class Mod {
-    public String name;
-    public String zipLink;
+    public final String name;
+    public final String zipLink;
     private Boolean activated;
     public ModPack modPack;
-    public TreeItem<String> node;
+    public final TreeItem<String> node;
 
     public Mod(String name, String zipLink, Boolean activated) {
         this.name = name;

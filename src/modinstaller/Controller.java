@@ -1,5 +1,6 @@
 package modinstaller;
 
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -26,12 +27,12 @@ public class Controller implements Initializable {
     public TreeView<String> tree_view;
     public WebView web_view;
 
-    private List<Mod> modList;
-    private List<ModPack> modPackList;
+    private final List<Mod> modList;
+    private final List<ModPack> modPackList;
 
-    private Image iconGreen = new Image(getClass().getResourceAsStream("/img/green.png"));
-    private Image iconYellow = new Image(getClass().getResourceAsStream("/img/yellow.png"));
-    private Image iconGray = new Image(getClass().getResourceAsStream("/img/gray.png"));
+    private final Image iconGreen = new Image(getClass().getResourceAsStream("/img/green.png"));
+    private final Image iconYellow = new Image(getClass().getResourceAsStream("/img/yellow.png"));
+    private final Image iconGray = new Image(getClass().getResourceAsStream("/img/gray.png"));
 
 
     public Controller() {
@@ -225,9 +226,8 @@ public class Controller implements Initializable {
     }
 
     private void saveActivatedMods() {
-        FileWriter fw = null;
         try {
-            fw = new FileWriter(getConfigFile().getAbsoluteFile());
+            FileWriter fw = new FileWriter(getConfigFile().getAbsoluteFile());
 
             for (Mod mod : modList) {
                 if (mod.isActivated()) fw.write(mod.name + "\n");

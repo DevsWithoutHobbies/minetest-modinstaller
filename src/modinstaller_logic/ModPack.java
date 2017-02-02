@@ -9,9 +9,9 @@ import java.util.List;
  * Created by noah on 2/1/17.
  */
 public class ModPack {
-    public String name;
-    private List<Mod> mods;
-    public TreeItem<String> node;
+    public final String name;
+    private final List<Mod> mods;
+    public final TreeItem<String> node;
 
     public ModPack(String name) {
         this.name = name;
