@@ -1,4 +1,4 @@
-package modinstaller;
+package utils;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more

@@ -1,4 +1,4 @@
-package modinstaller;
+package modinstaller_logic;
 
 import javafx.scene.control.TreeItem;
 
@@ -9,24 +9,23 @@ import java.util.List;
  * Created by noah on 2/1/17.
  */
 public class ModPack {
-    String name;
-    List<Mod> mods;
-    TreeItem<String> node;
+    public String name;
+    private List<Mod> mods;
+    public TreeItem<String> node;
 
-    ModPack(String name) {
+    public ModPack(String name) {
         this.name = name;
         mods = new ArrayList<>();
         node = new TreeItem<>(name);
-//        node.setGraphic();
     }
 
-    void toggleActivation() {
+    public void toggleActivation() {
         int activationLevel = getActivationLevel();
         if (activationLevel == 2) this.setActivated(false);
         else this.setActivated(true);
     }
 
-    void addMod(Mod mod) {
+    public void addMod(Mod mod) {
         if (mod != null) {
             mod.modPack = this;
             mods.add(mod);
@@ -34,7 +33,7 @@ public class ModPack {
         }
     }
 
-    int getActivationLevel() {
+    public int getActivationLevel() {
         int activeMods = 0;
         for (Mod mod : mods) {
             if (mod.isActivated()) activeMods++;

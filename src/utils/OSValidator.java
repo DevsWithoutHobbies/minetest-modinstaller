@@ -1,4 +1,4 @@
-package modinstaller;
+package utils;
 
 /**
  * Created by noah on 2/1/17.
@@ -23,13 +23,13 @@ public class OSValidator {
         }
     }
 
-    static boolean isWindows() {
+    public static boolean isWindows() {
 
         return (OS.contains("win"));
 
     }
 
-    static boolean isMac() {
+    public static boolean isMac() {
 
         return (OS.contains("mac"));
 

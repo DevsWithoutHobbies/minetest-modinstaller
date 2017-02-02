@@ -1,4 +1,4 @@
-package modinstaller;
+package modinstaller_logic;
 
 import javafx.scene.control.TreeItem;
 
@@ -6,13 +6,13 @@ import javafx.scene.control.TreeItem;
  * Created by noah on 2/1/17.
  */
 public class Mod {
-    String name;
-    String zipLink;
-    Boolean activated;
-    ModPack modPack;
-    TreeItem<String> node;
+    public String name;
+    public String zipLink;
+    private Boolean activated;
+    public ModPack modPack;
+    public TreeItem<String> node;
 
-    Mod(String name, String zipLink, Boolean activated) {
+    public Mod(String name, String zipLink, Boolean activated) {
         this.name = name;
         this.zipLink = zipLink;
         this.activated = activated;
@@ -20,15 +20,15 @@ public class Mod {
         node = new TreeItem<>(name);
     }
 
-    void toggleActivation() {
+    public void toggleActivation() {
         activated = !activated;
     }
 
-    Boolean isActivated() {
+    public Boolean isActivated() {
         return activated;
     }
 
-    void setActivated(Boolean activated) {
+    public void setActivated(Boolean activated) {
         this.activated = activated;
     }
 }

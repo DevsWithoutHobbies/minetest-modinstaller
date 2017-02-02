@@ -7,12 +7,19 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.web.WebView;
+import modinstaller_logic.Mod;
+import modinstaller_logic.ModPack;
+import utils.OSValidator;
+import utils.Utils;
 
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.*;
+
+import static utils.FileSystemUtils.deleteFile;
+import static utils.FileSystemUtils.sep;
 
 
 public class Controller implements Initializable {
@@ -31,21 +38,6 @@ public class Controller implements Initializable {
     public Controller() {
         this.modList = new ArrayList<>();
         this.modPackList = new ArrayList<>();
-    }
-
-    public static void deleteFile(File element) {
-        if (!element.exists()) return;
-        if (element.isDirectory()) {
-            for (File sub : element.listFiles()) {
-                deleteFile(sub);
-            }
-        }
-        element.delete();
-    }
-
-    public static String sep() {
-        if (OSValidator.isWindows()) return "\\";
-        else return "/";
     }
 
     private static String getMinetestDir() {
