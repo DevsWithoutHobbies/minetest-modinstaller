@@ -47,8 +47,6 @@ public class Controller implements Initializable {
     }
 
     private void installAsync() {
-        saveActivatedMods();
-
         String modsPath = getModsPath();
         String modInstallerPath = getMinetestDir() + sep() + "mod_installer_data";
         String tmpModsPath = getMinetestDir() + sep() + "mod_installer_data" + sep() + "data";
@@ -56,6 +54,8 @@ public class Controller implements Initializable {
         Utils.buildDirectory(new File(modsPath));
         Utils.buildDirectory(new File(modInstallerPath));
         Utils.buildDirectory(new File(tmpModsPath));
+
+        saveActivatedMods();
 
         List<Mod> toInstall = new ArrayList<>();
 
