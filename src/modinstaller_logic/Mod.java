@@ -10,24 +10,33 @@ import java.net.URLEncoder;
  */
 public class Mod {
     public final String name;
+    private final String description;
     public final String zipLink;
     public String urlData;
     private Boolean activated;
     public ModPack modPack;
     public final TreeItem<String> node;
 
-    public Mod(String name, String zipLink, String urlData, Boolean activated) {
-        this.name = name;
-        this.zipLink = zipLink;
+    public Mod(String dataString) {
+        String[] parts = dataString.split(":::");
+
+        this.name = parts[0];
+        this.zipLink = parts[1];
+        this.description = parts[4];
+
         try {
-            this.urlData = URLEncoder.encode(urlData, "UTF-8");
+            this.urlData = URLEncoder.encode(dataString, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             this.urlData = "";
             e.printStackTrace();
         }
-        this.activated = activated;
+        this.activated = false;
         this.modPack = null;
         node = new TreeItem<>(name);
+    }
+
+    public Boolean matchesSearchString(String searchString) {
+        return name.toLowerCase().contains(searchString.toLowerCase()) || description.toLowerCase().contains(searchString.toLowerCase());
     }
 
     public void toggleActivation() {

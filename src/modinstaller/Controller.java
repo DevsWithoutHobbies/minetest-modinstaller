@@ -226,8 +226,7 @@ public class Controller implements Initializable {
 
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
-            String[] parts = inputLine.split(":::");
-            modList.add(new Mod(parts[0], parts[1], inputLine, false));
+            modList.add(new Mod(inputLine));
         }
         in.close();
 
@@ -327,12 +326,12 @@ public class Controller implements Initializable {
         root.setExpanded(true);
 
         for (ModPack modPack : modPackList) {
-            TreeItem<String> node = modPack.getNode(search_field.getCharacters());
+            TreeItem<String> node = modPack.getNode(search_field.getCharacters().toString());
             if (node != null) root.getChildren().add(node);
         }
 
         for (Mod mod : modList) {
-            if (mod.modPack == null && mod.name.contains(search_field.getCharacters()))
+            if (mod.modPack == null && mod.matchesSearchString(search_field.getCharacters().toString()))
                 root.getChildren().add(mod.node);
         }
 

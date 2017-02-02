@@ -32,11 +32,11 @@ public class ModPack {
         }
     }
 
-    public TreeItem<String> getNode(CharSequence searchString) {
+    public TreeItem<String> getNode(String searchString) {
         node.getChildren().clear();
-        final Boolean includeAll = name.contains(searchString);
+        final Boolean includeAll = name.toLowerCase().contains(searchString.toLowerCase());
         for (Mod mod : mods) {
-            if (includeAll || mod.name.contains(searchString))
+            if (includeAll || mod.matchesSearchString(searchString))
                 node.getChildren().add(mod.node);
         }
         if (node.getChildren().size() > 0)
