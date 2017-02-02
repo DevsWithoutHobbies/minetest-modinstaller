@@ -136,11 +136,10 @@ public class Controller implements Initializable {
                 e.printStackTrace();
             }
 
-            // remove temporary download directory
-            deleteFile(tmpModFile);
-
             i++;
         }
+        // remove temporary download directory
+        deleteFile(new File(tmpModsPath));
 
         Platform.runLater(new Runnable() {
             @Override
@@ -222,7 +221,7 @@ public class Controller implements Initializable {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
             String[] parts = inputLine.split(":::");
-            modList.add(new Mod(parts[0], parts[1], false));
+            modList.add(new Mod(parts[0], parts[1], inputLine, false));
         }
         in.close();
 
@@ -338,7 +337,7 @@ public class Controller implements Initializable {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                     for (Mod mod : modList) {
                         if (currentItemSelected == mod.node) {
-                            showModInfo(mod.name);
+                            showModInfo(mod);
                         }
                     }
                 }
@@ -379,8 +378,7 @@ public class Controller implements Initializable {
     }
 
 
-    private void showModInfo(String modName) {
-        web_view.getEngine().load("https://www.google.de/#q=" + modName);
-
+    private void showModInfo(Mod mod) {
+        web_view.getEngine().load("http://mine-modinstaller.esy.es/modinfo.html?data=" + mod.urlData);
     }
 }
