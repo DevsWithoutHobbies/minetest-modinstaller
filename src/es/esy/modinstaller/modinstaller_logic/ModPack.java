@@ -3,6 +3,7 @@ package es.esy.modinstaller.modinstaller_logic;
 import javafx.scene.control.TreeItem;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -28,15 +29,16 @@ public class ModPack {
     public void addMod(Mod mod) {
         if (mod != null) {
             mod.modPack = this;
-            if (!mod.isLib) mods.add(mod);
+            mods.add(mod);
+            mods.sort(Comparator.comparing(a -> a.name));
         }
     }
 
-    public TreeItem<String> getNode(String searchString) {
+    public TreeItem<String> getNode(String searchString, Boolean showLibs) {
         node.getChildren().clear();
         final Boolean includeAll = name.toLowerCase().contains(searchString.toLowerCase());
         for (Mod mod : mods) {
-            if (includeAll || mod.matchesSearchString(searchString))
+            if ((includeAll || mod.matchesSearchString(searchString)) && (showLibs || !mod.isLib))
                 node.getChildren().add(mod.node);
         }
         if (node.getChildren().size() > 0)

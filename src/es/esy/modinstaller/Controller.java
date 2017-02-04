@@ -18,7 +18,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,8 +32,12 @@ public class Controller implements Initializable {
     public WebView web_view;
     public TextField search_field;
 
+    private Boolean showLibs = false;
+
     private final List<Mod> modList;
     private final List<ModPack> modPackList;
+
+    private final TreeItem<String> root = new TreeItem<>("All");
 
     private final Image iconGreen = new Image(getClass().getResourceAsStream("/es/esy/modinstaller/img/green.png"));
     private final Image iconYellow = new Image(getClass().getResourceAsStream("/es/esy/modinstaller/img/yellow.png"));
@@ -211,10 +214,7 @@ public class Controller implements Initializable {
 
     private void loadMods() throws IOException {
         URL mod_data = new URL("https://raw.githubusercontent.com/DevsWithoutHobbies/minetest-modinstaller-data/master/index");
-
-        URLConnection con = mod_data.openConnection();
-        con.setUseCaches(false);
-        BufferedReader in =  new BufferedReader (new InputStreamReader(con.getInputStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(mod_data.openStream()));
 
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -222,7 +222,7 @@ public class Controller implements Initializable {
         }
         in.close();
 
-        modList.sort((a, b) -> b.name.compareTo(a.name));
+        modList.sort(Comparator.comparing(a -> a.name));
     }
 
     private void loadModPacks() throws IOException {
@@ -245,7 +245,7 @@ public class Controller implements Initializable {
 
         in.close();
 
-        modPackList.sort((a, b) -> b.name.compareTo(a.name));
+        modPackList.sort(Comparator.comparing(a -> a.name));
     }
 
     private void loadActivatedMods() {
@@ -308,18 +308,17 @@ public class Controller implements Initializable {
     }
 
     private void resetTreeView() {
-
-        TreeItem<String> root = new TreeItem<>("All");
+        root.getChildren().clear();
 
         root.setExpanded(true);
 
         for (ModPack modPack : modPackList) {
-            TreeItem<String> node = modPack.getNode(search_field.getCharacters().toString());
+            TreeItem<String> node = modPack.getNode(search_field.getCharacters().toString(), showLibs);
             if (node != null) root.getChildren().add(node);
         }
 
         for (Mod mod : modList) {
-            if (!mod.isLib && mod.modPack == null && mod.matchesSearchString(search_field.getCharacters().toString()))
+            if ((!mod.isLib || showLibs) && mod.modPack == null && mod.matchesSearchString(search_field.getCharacters().toString()))
                 root.getChildren().add(mod.node);
         }
 
@@ -379,5 +378,15 @@ public class Controller implements Initializable {
 
     public void onMenuChangeInstallDirectory(ActionEvent actionEvent) {
         loadModsPath(true);
+    }
+
+    public void onMenuShowLibs(ActionEvent actionEvent) {
+        showLibs = true;
+        resetTreeView();
+    }
+
+    public void onMenuHideLibs(ActionEvent actionEvent) {
+        showLibs = false;
+        resetTreeView();
     }
 }
