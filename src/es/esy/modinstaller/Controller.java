@@ -15,8 +15,10 @@ import es.esy.modinstaller.utils.Utils;
 
 import java.io.*;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -95,37 +97,33 @@ public class Controller implements Initializable {
                 // unpack in temporary directory
                 Utils.unpackArchive(new URL(mod.zipLink), tmpModFile);
 
-                //get all directories
-                File[] directories = tmpModFile.listFiles(File::isDirectory);
+                File fileInZip = new File(tmpModFile.toPath() + sep() + mod.zipPath.replace("/", sep()));
 
-                // move first folder to final location
-                if (directories != null && directories.length > 0) {
-                    Files.move(directories[0].toPath(), modFile.toPath());
-                    File dependenciesFile = new File(modFile + sep() + "depends.txt");
-                    if (dependenciesFile.exists()) {
-                        String line;
-                        try (
-                                InputStream fis = new FileInputStream(dependenciesFile.getAbsoluteFile());
-                                InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-                                BufferedReader br = new BufferedReader(isr)
-                        ) {
-                            while ((line = br.readLine()) != null) {
-                                String name = line;
-                                Boolean optional = false;
-                                if (line.lastIndexOf("?") == line.length() - 1) {
-                                    name = line.substring(0, line.length() - 1);
-                                    optional = true;
-                                }
-                                Mod m = getModByName(name);
-                                if (m == null) {
-                                    if (!optional && !manualInstallRequired.contains(name))
-                                        manualInstallRequired.add(name);
-                                    else if (optional && !manualInstallOptional.contains(name))
-                                        manualInstallOptional.add(name);
-                                } else {
-                                    if (!toInstall.contains(m))
-                                        toInstall.add(m);
-                                }
+                Files.move(fileInZip.toPath(), modFile.toPath());
+                File dependenciesFile = new File(modFile + sep() + "depends.txt");
+                if (dependenciesFile.exists()) {
+                    String line;
+                    try (
+                            InputStream fis = new FileInputStream(dependenciesFile.getAbsoluteFile());
+                            InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+                            BufferedReader br = new BufferedReader(isr)
+                    ) {
+                        while ((line = br.readLine()) != null) {
+                            String name = line;
+                            Boolean optional = false;
+                            if (line.lastIndexOf("?") == line.length() - 1) {
+                                name = line.substring(0, line.length() - 1);
+                                optional = true;
+                            }
+                            Mod m = getModByName(name);
+                            if (m == null) {
+                                if (!optional && !manualInstallRequired.contains(name))
+                                    manualInstallRequired.add(name);
+                                else if (optional && !manualInstallOptional.contains(name))
+                                    manualInstallOptional.add(name);
+                            } else {
+                                if (!toInstall.contains(m))
+                                    toInstall.add(m);
                             }
                         }
                     }
@@ -213,7 +211,10 @@ public class Controller implements Initializable {
 
     private void loadMods() throws IOException {
         URL mod_data = new URL("https://raw.githubusercontent.com/DevsWithoutHobbies/minetest-modinstaller-data/master/index");
-        BufferedReader in = new BufferedReader(new InputStreamReader(mod_data.openStream()));
+
+        URLConnection con = mod_data.openConnection();
+        con.setUseCaches(false);
+        BufferedReader in =  new BufferedReader (new InputStreamReader(con.getInputStream()));
 
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -318,7 +319,7 @@ public class Controller implements Initializable {
         }
 
         for (Mod mod : modList) {
-            if (mod.modPack == null && mod.matchesSearchString(search_field.getCharacters().toString()))
+            if (!mod.isLib && mod.modPack == null && mod.matchesSearchString(search_field.getCharacters().toString()))
                 root.getChildren().add(mod.node);
         }
 

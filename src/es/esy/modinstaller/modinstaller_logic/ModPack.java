@@ -28,7 +28,7 @@ public class ModPack {
     public void addMod(Mod mod) {
         if (mod != null) {
             mod.modPack = this;
-            mods.add(mod);
+            if (!mod.isLib) mods.add(mod);
         }
     }
 

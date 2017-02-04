@@ -4,6 +4,7 @@ import javafx.scene.control.TreeItem;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Objects;
 
 /**
  * Created by noah on 2/1/17.
@@ -12,9 +13,13 @@ public class Mod {
     public final String name;
     private final String description;
     public final String zipLink;
+    public final String zipPath;
+    public Boolean isLib;
     public String urlData;
     private Boolean activated;
     public ModPack modPack;
+
+
     public final TreeItem<String> node;
 
     public Mod(String dataString) {
@@ -22,7 +27,9 @@ public class Mod {
 
         this.name = parts[0];
         this.zipLink = parts[1];
-        this.description = parts[4];
+        this.zipPath = parts[2];
+        this.isLib = Objects.equals(parts[3], "1");
+        this.description = parts[6];
 
         try {
             this.urlData = URLEncoder.encode(dataString, "UTF-8");
