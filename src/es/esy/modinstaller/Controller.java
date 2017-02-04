@@ -100,46 +100,43 @@ public class Controller implements Initializable {
                 // unpack in temporary directory
                 Utils.unpackArchive(new URL(mod.zipLink), tmpModFile);
 
-                File fileInZip;
-
                 //get all directories
                 File[] directories = tmpModFile.listFiles(File::isDirectory);
 
                 // use first folder if it exists
-                if (directories != null && directories.length == 1) {
-                    fileInZip = directories[0];
-                } else {
-                    fileInZip = new File(tmpModFile.toPath() + sep() + mod.zipPath.replace("/", sep()));
-                }
+                if (directories != null && directories.length > 0) {
+                    File fileInZip = new File(directories[0].toPath() + sep() + mod.zipPath.replace("/", sep()));
 
-                Files.move(fileInZip.toPath(), modFile.toPath());
-                File dependenciesFile = new File(modFile + sep() + "depends.txt");
-                if (dependenciesFile.exists()) {
-                    String line;
-                    try (
-                            InputStream fis = new FileInputStream(dependenciesFile.getAbsoluteFile());
-                            InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-                            BufferedReader br = new BufferedReader(isr)
-                    ) {
-                        while ((line = br.readLine()) != null) {
-                            String name = line;
-                            Boolean optional = false;
-                            if (line.lastIndexOf("?") == line.length() - 1) {
-                                name = line.substring(0, line.length() - 1);
-                                optional = true;
-                            }
-                            Mod m = getModByName(name);
-                            if (m == null) {
-                                if (!optional && !manualInstallRequired.contains(name))
-                                    manualInstallRequired.add(name);
-                                else if (optional && !manualInstallOptional.contains(name))
-                                    manualInstallOptional.add(name);
-                            } else {
-                                if (!toInstall.contains(m))
-                                    toInstall.add(m);
+                    Files.move(fileInZip.toPath(), modFile.toPath());
+                    File dependenciesFile = new File(modFile + sep() + "depends.txt");
+                    if (dependenciesFile.exists()) {
+                        String line;
+                        try (
+                                InputStream fis = new FileInputStream(dependenciesFile.getAbsoluteFile());
+                                InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+                                BufferedReader br = new BufferedReader(isr)
+                        ) {
+                            while ((line = br.readLine()) != null) {
+                                String name = line;
+                                Boolean optional = false;
+                                if (line.lastIndexOf("?") == line.length() - 1) {
+                                    name = line.substring(0, line.length() - 1);
+                                    optional = true;
+                                }
+                                Mod m = getModByName(name);
+                                if (m == null) {
+                                    if (!optional && !manualInstallRequired.contains(name))
+                                        manualInstallRequired.add(name);
+                                    else if (optional && !manualInstallOptional.contains(name))
+                                        manualInstallOptional.add(name);
+                                } else {
+                                    if (!toInstall.contains(m))
+                                        toInstall.add(m);
+                                }
                             }
                         }
                     }
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
