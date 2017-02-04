@@ -15,7 +15,6 @@ import es.esy.modinstaller.utils.Utils;
 
 import java.io.*;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.*;
@@ -43,11 +42,16 @@ public class Controller implements Initializable {
     private final Image iconYellow = new Image(getClass().getResourceAsStream("/es/esy/modinstaller/img/yellow.png"));
     private final Image iconGray = new Image(getClass().getResourceAsStream("/es/esy/modinstaller/img/gray.png"));
 
+    private static List<String> ignoreDependencies;
 
 
     public Controller() {
         this.modList = new ArrayList<>();
         this.modPackList = new ArrayList<>();
+        String[] list  = {"default", "beds", "boats", "bones", "bucket", "carts", "creative", "default", "doors", "dye", "farming",
+                "fire", "flowers", "give_initial_stuff", "nyancat", "screwdriver", "sethome", "sfinv",
+                "stairs", "tnt", "vessels", "walls", "wool", "xpanes"};
+        ignoreDependencies = Arrays.asList(list);
     }
 
     private void installAsync() {
@@ -73,6 +77,8 @@ public class Controller implements Initializable {
 
         List<String> manualInstallRequired = new ArrayList<>();
         List<String> manualInstallOptional = new ArrayList<>();
+        Map<String, File> cachedFiles = new HashMap<>();
+
         int i = 0;
         while (i < toInstall.size()) {
             // get mod
@@ -82,10 +88,6 @@ public class Controller implements Initializable {
                 System.out.println("(" + (finalI + 1) + "/" + toInstall.size() + ") Installing " + mod.name + "...");
                 install_btn.setText("(" + (finalI + 1) + "/" + toInstall.size() + ") Installing " + mod.name + "...");
             });
-
-            // create temporary download directory
-            File tmpModFile = new File(tmpModsPath + sep() + mod.name);
-            Utils.buildDirectory(tmpModFile);
 
             // get final location
             File modFile = getModDirectory(mod);
@@ -97,8 +99,26 @@ public class Controller implements Initializable {
             }
 
             try {
-                // unpack in temporary directory
-                Utils.unpackArchive(new URL(mod.zipLink), tmpModFile);
+                // create temporary download directory
+                File tmpModFile;
+
+                if (cachedFiles.containsKey(mod.zipLink)) {
+                    tmpModFile = cachedFiles.get(mod.zipLink);
+                } else {
+                    Platform.runLater(() -> {
+                        install_btn.setText("(" + (finalI + 1) + "/" + toInstall.size() + ") Downloadig " + mod.zipLink + "...");
+                        System.out.println("Downloadig " + mod.zipLink + "...");
+                    });
+                    String unpackFolderName = String.valueOf(cachedFiles.size());
+                    tmpModFile = new File(tmpModsPath + sep() + unpackFolderName);
+                    Utils.buildDirectory(tmpModFile);
+
+                    // unpack in temporary directory
+                    Utils.unpackArchive(new URL(mod.zipLink), tmpModFile);
+                    cachedFiles.put(mod.zipLink, tmpModFile);
+                }
+
+
 
                 //get all directories
                 File[] directories = tmpModFile.listFiles(File::isDirectory);
@@ -110,13 +130,15 @@ public class Controller implements Initializable {
                     Files.move(fileInZip.toPath(), modFile.toPath());
                     File dependenciesFile = new File(modFile + sep() + "depends.txt");
                     if (dependenciesFile.exists()) {
-                        String line;
+                        String l;
                         try (
                                 InputStream fis = new FileInputStream(dependenciesFile.getAbsoluteFile());
                                 InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
                                 BufferedReader br = new BufferedReader(isr)
                         ) {
-                            while ((line = br.readLine()) != null) {
+                            while ((l = br.readLine()) != null) {
+                                String line = l.trim();
+                                if (line.length() == 0 || ignoreDependencies.contains(line)) continue;
                                 String name = line;
                                 Boolean optional = false;
                                 if (line.lastIndexOf("?") == line.length() - 1) {
