@@ -42,6 +42,11 @@
                   <MenuItem mnemonicParsing="false" onAction="#onMenuHideLibs" text="Hide" />
               </items>
             </Menu>
+            <Menu mnemonicParsing="false" text="Help">
+              <items>
+                <MenuItem mnemonicParsing="false" onAction="#showHelp" text="Show Help" />
+              </items>
+            </Menu>
         </menus>
       </MenuBar>
    </children>

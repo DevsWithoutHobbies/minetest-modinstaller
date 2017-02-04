@@ -190,6 +190,7 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        showHelp();
         search_field.textProperty().addListener((observable, oldValue, newValue) -> resetTreeView());
 
         long startTime = System.nanoTime();
@@ -388,5 +389,9 @@ public class Controller implements Initializable {
     public void onMenuHideLibs(ActionEvent actionEvent) {
         showLibs = false;
         resetTreeView();
+    }
+
+    public void showHelp() {
+        web_view.getEngine().load("http://modinstaller.esy.es/instructions.html");
     }
 }
