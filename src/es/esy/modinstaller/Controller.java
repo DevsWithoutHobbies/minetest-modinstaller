@@ -100,7 +100,17 @@ public class Controller implements Initializable {
                 // unpack in temporary directory
                 Utils.unpackArchive(new URL(mod.zipLink), tmpModFile);
 
-                File fileInZip = new File(tmpModFile.toPath() + sep() + mod.zipPath.replace("/", sep()));
+                File fileInZip;
+
+                //get all directories
+                File[] directories = tmpModFile.listFiles(File::isDirectory);
+
+                // use first folder if it exists
+                if (directories != null && directories.length == 1) {
+                    fileInZip = directories[0];
+                } else {
+                    fileInZip = new File(tmpModFile.toPath() + sep() + mod.zipPath.replace("/", sep()));
+                }
 
                 Files.move(fileInZip.toPath(), modFile.toPath());
                 File dependenciesFile = new File(modFile + sep() + "depends.txt");
