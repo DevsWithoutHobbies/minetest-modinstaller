@@ -360,15 +360,18 @@ public class Controller implements Initializable {
         });
     }
 
+    private void setAll(Boolean newStatus) {
+        for (Mod mod : modList) {
+            mod.setActivated(newStatus);
+        }
+    }
+
     private void toggleAll() {
         int activeModCount = 0;
         for (Mod mod : modList) {
             if (mod.isActivated()) activeModCount++;
         }
-        Boolean newStatus = activeModCount < modList.size();
-        for (Mod mod : modList) {
-            mod.setActivated(newStatus);
-        }
+        setAll(activeModCount < modList.size());
     }
 
 
@@ -381,17 +384,27 @@ public class Controller implements Initializable {
         loadModsPath(true);
     }
 
-    public void onMenuShowLibs(ActionEvent actionEvent) {
+    public void onMenuShowLibs() {
         showLibs = true;
         resetTreeView();
     }
 
-    public void onMenuHideLibs(ActionEvent actionEvent) {
+    public void onMenuHideLibs() {
         showLibs = false;
         resetTreeView();
     }
 
     public void showHelp() {
         web_view.getEngine().load("http://modinstaller.esy.es/instructions.html");
+    }
+
+    public void onMenuActivateAll() {
+        setAll(true);
+        updateImages();
+    }
+
+    public void onMenuDisableAll() {
+        setAll(false);
+        updateImages();
     }
 }

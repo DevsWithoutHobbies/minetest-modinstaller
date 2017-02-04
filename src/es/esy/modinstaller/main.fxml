@@ -36,6 +36,12 @@
                   <MenuItem mnemonicParsing="false" onAction="#onMenuChangeInstallDirectory" text="Change Install Directory" />
             </items>
           </Menu>
+            <Menu mnemonicParsing="false" text="Mods">
+              <items>
+                <MenuItem mnemonicParsing="false" onAction="#onMenuActivateAll" text="Activate All" />
+                  <MenuItem mnemonicParsing="false" onAction="#onMenuDisableAll" text="Disable All" />
+              </items>
+            </Menu>
             <Menu mnemonicParsing="false" text="Libraries">
               <items>
                 <MenuItem mnemonicParsing="false" onAction="#onMenuShowLibs" text="Show" />
