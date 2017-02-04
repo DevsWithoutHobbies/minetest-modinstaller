@@ -38,7 +38,7 @@
           </Menu>
             <Menu mnemonicParsing="false" text="Mods">
               <items>
-                <MenuItem mnemonicParsing="false" onAction="#onMenuActivateAll" text="Activate All" />
+                <MenuItem mnemonicParsing="false" onAction="#onMenuEnableAll" text="Enable All" />
                   <MenuItem mnemonicParsing="false" onAction="#onMenuDisableAll" text="Disable All" />
               </items>
             </Menu>

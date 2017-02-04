@@ -398,7 +398,7 @@ public class Controller implements Initializable {
         web_view.getEngine().load("http://modinstaller.esy.es/instructions.html");
     }
 
-    public void onMenuActivateAll() {
+    public void onMenuEnableAll() {
         setAll(true);
         updateImages();
     }
