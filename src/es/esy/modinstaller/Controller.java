@@ -55,6 +55,11 @@ public class Controller implements Initializable {
     }
 
     private void installAsync() {
+        Platform.runLater(() -> {
+            System.out.println("Preparing Installation...");
+            install_btn.setText("Preparing Installation...");
+        });
+
         String modsPath = getModsPath();
         String tmpModsPath = getConfigDir() + sep() + "tmp_data";
 
@@ -62,6 +67,11 @@ public class Controller implements Initializable {
         Utils.buildDirectory(new File(tmpModsPath));
 
         saveActivatedMods();
+
+        Platform.runLater(() -> {
+            System.out.println("Collecting Data...");
+            install_btn.setText("Collecting Data...");
+        });
 
         List<Mod> toInstall = new ArrayList<>();
 
@@ -138,18 +148,20 @@ public class Controller implements Initializable {
                         ) {
                             while ((l = br.readLine()) != null) {
                                 String line = l.trim();
-                                if (line.length() == 0 || ignoreDependencies.contains(line)) continue;
+                                if (line.length() == 0) continue;
                                 String name = line;
                                 Boolean optional = false;
                                 if (line.lastIndexOf("?") == line.length() - 1) {
                                     name = line.substring(0, line.length() - 1);
                                     optional = true;
                                 }
+                                if (ignoreDependencies.contains(name)) continue;
                                 Mod m = getModByName(name);
                                 if (m == null) {
-                                    if (!optional && !manualInstallRequired.contains(name))
+                                    if (!optional && !manualInstallRequired.contains(name)) {
                                         manualInstallRequired.add(name);
-                                    else if (optional && !manualInstallOptional.contains(name))
+                                        System.err.println(mod.name + " requires " + name);
+                                    } else if (optional && !manualInstallOptional.contains(name))
                                         manualInstallOptional.add(name);
                                 } else {
                                     if (!toInstall.contains(m))
@@ -248,7 +260,9 @@ public class Controller implements Initializable {
 
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
-            modList.add(new Mod(inputLine));
+            Mod new_mod = new Mod(inputLine);
+            if (getModByName(new_mod.name) != null) System.err.println("Mod duplicated: " + new_mod.name);
+            modList.add(new_mod);
         }
         in.close();
 
